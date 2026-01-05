@@ -8,13 +8,24 @@
     },
     "id": "adriann.roastbot",
     "name": "RoastBot",
-    "version": "v1.0.0",
+    "version": "1.1.0",
     "developer": "Adriann",
     "description": "A professional hater in mod form. Flames you every time you die.",
     "tags": ["joke"],
+    "dependencies": [
+        {
+            "id": "geode.node-ids",
+            "version": ">=1.21.1",
+            "importance": "required"
+        }
+    ],
     "resources": {
-        "files": [
-            "resources/*.png"
-        ]
-    }
+    "files": [
+        "resources/67.mp3",
+        "resources/med.png",
+        "resources/hard.png",
+        "resources/idfk.png",
+        "resources/extremes.json"
+    ]
+}
 }
