@@ -14,7 +14,6 @@ class $modify(RoastBotLayer, PlayLayer) {
         int p = static_cast<int>(this->getCurrentPercent());
         std::string levelName = this->m_level->m_levelName;
 
-        // --- AUDIO TRIGGER (67%) ---
         if (p == 67) {
             auto audioPath = Mod::get()->getResourcesDir() / "67.mp3";
             
@@ -48,13 +47,11 @@ class $modify(RoastBotLayer, PlayLayer) {
         std::string r = "";
         std::string iconName = "med.png";
 
-        // 1% CHANCE TO BE NICE
         if (rand() % 100 == 0) {
             r = "Ok i flamed u enough, u will beat it soon 👍";
             iconName = "med.png";
         } 
         else {
-            // --- JUMPING EXTREMES ROASTS ---
             if (isExtreme && p > 5) {
                 if (totalDemons < 30) {
                     r = fmt::format("Only {} demons and you're jumping\nto {}? Delusional 💀", totalDemons, levelName);
@@ -107,7 +104,6 @@ class $modify(RoastBotLayer, PlayLayer) {
         }
 
         if (!r.empty()) {
-            // Try to load the icon - just attempt it directly
             CCSprite* icon = CCSprite::create((Mod::get()->getResourcesDir() / iconName).string().c_str());
             
             if (icon) {
@@ -115,16 +111,15 @@ class $modify(RoastBotLayer, PlayLayer) {
                 log::info("Icon loaded: {}", iconName);
             } else {
                 log::warn("Could not load icon: {}", iconName);
-                // Try alternative names
                 if (iconName == "idfk.png") {
                     icon = CCSprite::create((Mod::get()->getResourcesDir() / "hard.png").string().c_str());
                 }
                 if (icon) icon->setScale(0.5f);
             }
             
-            // Show notification (with or without icon)
             Notification::create(r, icon, 3.0f)->show();
             log::info("Notification: {}", r);
         }
     }
 };
+// holy fish
