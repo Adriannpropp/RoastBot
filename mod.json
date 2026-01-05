@@ -11,8 +11,10 @@
     "version": "v1.0.0",
     "developer": "Adriann",
     "description": "A professional hater in mod form. Flames you every time you die.",
-	"tags": ["joke"],
+    "tags": ["joke"],
     "resources": {
-        "files": []
+        "files": [
+            "resources/*.png"
+        ]
     }
 }

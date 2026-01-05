@@ -1,3 +1,1 @@
-# Template Mod
-
-Edit about.md to change this
+This mod just roasts you depending on how far u are on a level 😭
