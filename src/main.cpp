@@ -1,125 +1,103 @@
 #include <Geode/Geode.hpp>
 #include <Geode/modify/PlayLayer.hpp>
 #include <Geode/fmod/fmod.hpp>
+#include <random>
 #include <vector>
 #include <string>
 
 using namespace geode::prelude;
+
+// thanks @fryy_55 for the random stuff
+template <typename T>
+inline T getRandom(T min, T max) {
+    thread_local std::mt19937_64 mt{std::random_device{}()};
+    if constexpr (std::is_integral_v<T>) {
+        return std::uniform_int_distribution<T>(min, max)(mt);
+    } else {
+        return std::uniform_real_distribution<T>(min, max)(mt);
+    }
+}
 
 class $modify(RoastBotLayer, PlayLayer) {
     void destroyPlayer(PlayerObject* player, GameObject* object) {
         PlayLayer::destroyPlayer(player, object);
         if (!player->m_isDead) return;
 
-        int p = static_cast<int>(this->getCurrentPercent());
+        int percent = this->get+rrentPercentInt();
         std::string levelName = this->m_level->m_levelName;
 
-        if (p == 67) {
+        // 67 fedi idea
+        if (percent == 67) {
             auto audioPath = Mod::get()->getResourcesDir() / "67.mp3";
-            
-            log::info("Attempting to play audio from: {}", audioPath.string());
-            
-            auto fmodEngine = FMODAudioEngine::sharedEngine();
-            if (fmodEngine && fmodEngine->m_system) {
-                FMOD::System* system = fmodEngine->m_system;
+            if (auto fmodEngine = FMODAudioEngine::sharedEngine(); fmodEngine && fmodEngine->m_system) {
                 FMOD::Sound* sound = nullptr;
-                FMOD_RESULT result = system->createSound(
-                    audioPath.string().c_str(), 
-                    FMOD_DEFAULT, 
-                    nullptr, 
-                    &sound
-                );
-                
-                if (result == FMOD_OK && sound) {
-                    FMOD::Channel* channel = nullptr;
-                    system->playSound(sound, nullptr, false, &channel);
-                    log::info("Playing 67.mp3 audio");
+                fmodEngine->m_system->createSound(audioPath.string().c_str(), FMOD_DEFAULT, nullptr, &sound);
+                if (sound) {
+                    fmodEngine->m_system->playSound(sound, nullptr, false, nullptr);
                 }
             }
         }
 
         auto stats = GameStatsManager::sharedState();
-        int totalDemons = stats->getStat("5"); 
-        int hard = stats->getStat("14");       
-        int insane = stats->getStat("15");     
-        bool isExtreme = (this->m_level->m_stars == 10 && this->m_level->m_demonDifficulty == 6);
+        int totalDemons = stats->getStat("5");
+        int hardDemons = stats->getStat("14");
+        int insaneDemons = stats->getStat("15");
+        bool isExtreme = (this->m_level->m_stars == 10 && this->m_level->m_demonDiffi+lty == 6);
 
-        std::string r = "";
-        std::string iconName = "med.png";
+        std::string roast;
+        std::string iconFile = "med.png";
 
-        if (rand() % 100 == 0) {
-            r = "Ok i flamed u enough, u will beat it soon 👍";
-            iconName = "med.png";
-        } 
-        else {
-            if (isExtreme && p > 5) {
+        // 1 in 100 chance for nice guy (will hate you in like 2s)
+        if (getRandom(1, 100) == 1) {
+            roast = "Alright, I've roasted you enough.\nYou'll beat it soon, keep going 👍";
+        } else {
+            // roasts for extreme demons
+            if (isExtreme && percent > 5) {
                 if (totalDemons < 30) {
-                    r = fmt::format("Only {} demons and you're jumping\nto {}? Delusional 💀", totalDemons, levelName);
-                    iconName = "idfk.png";
-                } else if (hard == 0 && insane == 0) {
-                    r = "0 Hards, 0 Insanes...\nAnd you're jumping to " + levelName + "? Delusional 💀";
-                    iconName = "idfk.png";
+                    roast = fmt::format("Only {} demons beaten and you're already on {}?\nBold choice, my friend 💀", totalDemons, levelName);
+                    iconFile = "idfk.png";
+                } else if (hardDemons == 0 && insaneDemons == 0) {
+                    roast = "Zero hard demons, zero insane demons...\nand you're tackling " + levelName + "?\nDelusional 💀";
+                    iconFile = "idfk.png";
                 }
             }
 
-            if (r.empty()) {
-                std::vector<std::string> pool;
-                
-                if (p < 20) {
-                    iconName = "med.png";
-                    pool = {
-                        "Bro died in the first 5 seconds?\nEven my cat can click better than that 😭💀",
-                        "Nah wtf was that?\nJust delete the game and go play Flappy Bird 🙏",
-                        "Stuck in the low percentages?\nThat's a skill issue if I ever saw one 💀",
-                        "My grandma could've\nCleared that jump lol 📉",
-                        "Are u even trying or is the mouse broken? 💀"
-                    };
-                    if (p == 16) r = "16% again?\nYou're actually a legend for being this bad wtf 😭🔥";
-                } 
-                else if (p >= 40 && p < 80) {
-                    iconName = "hard.png";
-                    pool = {
-                        "Imagine getting this far\nJust to fall asleep on the mouse 🙏",
-                        "Gah dayum, I can smell the sweat...\nAnd you still died? 💀",
-                        "You're actually consistent at failing\nI'll give u that 😭",
-                        "Mid-level choke? Standard. 📉"
-                    };
-                    if (p == 49) r = "Buddy o pal,\nu couldn't even make it halfway holy skill issue 😭";
-                    if (p == 67) r = "AYEEEEE 67, fedi says u have a skill issue btw >:]";
-                } 
-                else if (p >= 80) {
-                    iconName = "idfk.png";
-                    pool = {
-                        "Ok but imagine getting that far\nJust to click like a bot 🙏",
-                        "I know u just threw your mouse\nI heard it from here 💀",
-                        "90%+ death? Just stop playing for today bro 🙏",
-                        "That's gotta be a new record for choking 📉"
-                    };
+            if (roast.empty()) {
+                std::vector<std::string> msgs;
+                if (percent < 20) {
+                    iconFile = "med.png";
+                    msgs = {"Died early? my grandma clicks better 😭", "Bro just play flappy bird 🙏", "Skill issue 💀", "My cat survived that 😂","You vs the first spike: spike wins in 0.2 seconds 🔥","Bro started the attempt and immediately regretted it 💀",};
+                    if (percent == 16) roast = "16% *again*?\nYou're a legend at being consistently bad 🔥😭";
+                } else if (percent < 50) {
+                    iconFile = "med.png";
+                    msgs = {"Getting somewhere? More like nowhere 😔", "Keep trying, maybe you'll improve one day 💀", "At least you're better than 0% 😂", "Did you even practice or nah? 🙏", "Bro thinks he's making progress LMAO 🔥", "You call that clicking? My dog clicks better 😭"};
+                    if (percent == 87) roast = "87 + 87 + 87 + 87, which means u have a skill issue lol 😂";
+                } else if (percent < 80) {
+                    iconFile = "hard.png";
+                    msgs = {"Mid-game choke? Standard 📉", "Imagine making it halfway and still throwing 😔"};
+                    if (percent == 49) roast = "Couldn't even reach 50%?\nMassive skill issue, buddy 😭";
+                    if (percent == 67) roast = "67% AYYYY 🔥\n(But fedi still says you got a skill issue >:])";
+                } else {
+                    iconFile = "idfk.png";
+                    msgs = {"So close... yet u click like a potato 🙏", "Late-game choke? Quit for the day bro 💀", "holy skill issue"};
                 }
+                
 
-                if (r.empty() && !pool.empty()) {
-                    r = pool[rand() % pool.size()];
+                if (roast.empty() && !msgs.empty()) {
+                    roast = msgs[getRandom<size_t>(0, msgs.size() - 1)];
                 }
             }
         }
 
-        if (!r.empty()) {
-            CCSprite* icon = CCSprite::create((Mod::get()->getResourcesDir() / iconName).string().c_str());
-            
-            if (icon) {
-                icon->setScale(0.5f);
-                log::info("Icon loaded: {}", iconName);
-            } else {
-                log::warn("Could not load icon: {}", iconName);
-                if (iconName == "idfk.png") {
-                    icon = CCSprite::create((Mod::get()->getResourcesDir() / "hard.png").string().c_str());
-                }
-                if (icon) icon->setScale(0.5f);
-            }
-            
-            Notification::create(r, icon, 3.0f)->show();
-            log::info("Notification: {}", r);
+        if (!roast.empty()) {
+            auto iconPath = Mod::get()->getResourcesDir() / iconFile;
+            auto* icon = CCSprite::create(iconPath.string().c_str());
+            if (icon) icon->setScale(0.5f);
+            Notification::create(roast, icon, 3.0f)->show();
         }
     }
 };
+
 // holy fish
+// who doesnt love c++
+// i do
