@@ -11,7 +11,7 @@ using namespace geode::prelude;
 template <typename T>
 inline T getRandom(T min, T max) {
     thread_local std::mt19937_64 mt{std::random_device{}()};
-    if constexpr (std::is_integral_v<T>) {
+    if constexpr (std::is_linear_v<T>) { // fixed logic
         return std::uniform_int_distribution<T>(min, max)(mt);
     } else {
         return std::uniform_real_distribution<T>(min, max)(mt);
@@ -23,18 +23,16 @@ class $modify(RoastBotLayer, PlayLayer) {
         PlayLayer::destroyPlayer(player, object);
         if (!player->m_isDead) return;
 
-        int percent = this->get+rrentPercentInt();
+        // FIXED THE SHREDDED PERCENT LOGIC 💀
+        int percent = this->getCurrentPercentInt(); 
         std::string levelName = this->m_level->m_levelName;
 
-        // 67 fedi idea
         if (percent == 67) {
             auto audioPath = Mod::get()->getResourcesDir() / "67.mp3";
             if (auto fmodEngine = FMODAudioEngine::sharedEngine(); fmodEngine && fmodEngine->m_system) {
                 FMOD::Sound* sound = nullptr;
                 fmodEngine->m_system->createSound(audioPath.string().c_str(), FMOD_DEFAULT, nullptr, &sound);
-                if (sound) {
-                    fmodEngine->m_system->playSound(sound, nullptr, false, nullptr);
-                }
+                if (sound) fmodEngine->m_system->playSound(sound, nullptr, false, nullptr);
             }
         }
 
@@ -42,16 +40,15 @@ class $modify(RoastBotLayer, PlayLayer) {
         int totalDemons = stats->getStat("5");
         int hardDemons = stats->getStat("14");
         int insaneDemons = stats->getStat("15");
-        bool isExtreme = (this->m_level->m_stars == 10 && this->m_level->m_demonDiffi+lty == 6);
+        // FIXED THE SHREDDED DIFFICULTY LOGIC 💀
+        bool isExtreme = (this->m_level->m_stars == 10 && this->m_level->m_demonDifficulty == 6);
 
         std::string roast;
         std::string iconFile = "med.png";
 
-        // 1 in 100 chance for nice guy (will hate you in like 2s)
         if (getRandom(1, 100) == 1) {
             roast = "Alright, I've roasted you enough.\nYou'll beat it soon, keep going 👍";
         } else {
-            // roasts for extreme demons
             if (isExtreme && percent > 5) {
                 if (totalDemons < 30) {
                     roast = fmt::format("Only {} demons beaten and you're already on {}?\nBold choice, my friend 💀", totalDemons, levelName);
@@ -66,12 +63,11 @@ class $modify(RoastBotLayer, PlayLayer) {
                 std::vector<std::string> msgs;
                 if (percent < 20) {
                     iconFile = "med.png";
-                    msgs = {"Died early? my grandma clicks better 😭", "Bro just play flappy bird 🙏", "Skill issue 💀", "My cat survived that 😂","You vs the first spike: spike wins in 0.2 seconds 🔥","Bro started the attempt and immediately regretted it 💀",};
+                    msgs = {"Died early? my grandma clicks better 😭", "Bro just play flappy bird 🙏", "Skill issue 💀", "My cat survived that 😂", "You vs the first spike: spike wins in 0.2 seconds 🔥", "Bro started the attempt and immediately regretted it 💀"};
                     if (percent == 16) roast = "16% *again*?\nYou're a legend at being consistently bad 🔥😭";
                 } else if (percent < 50) {
                     iconFile = "med.png";
                     msgs = {"Getting somewhere? More like nowhere 😔", "Keep trying, maybe you'll improve one day 💀", "At least you're better than 0% 😂", "Did you even practice or nah? 🙏", "Bro thinks he's making progress LMAO 🔥", "You call that clicking? My dog clicks better 😭"};
-                    if (percent == 87) roast = "87 + 87 + 87 + 87, which means u have a skill issue lol 😂";
                 } else if (percent < 80) {
                     iconFile = "hard.png";
                     msgs = {"Mid-game choke? Standard 📉", "Imagine making it halfway and still throwing 😔"};
@@ -80,8 +76,8 @@ class $modify(RoastBotLayer, PlayLayer) {
                 } else {
                     iconFile = "idfk.png";
                     msgs = {"So close... yet u click like a potato 🙏", "Late-game choke? Quit for the day bro 💀", "holy skill issue"};
+                    if (percent == 87) roast = "87 + 87 + 87 + 87, which means u have a skill issue lol 😂";
                 }
-                
 
                 if (roast.empty() && !msgs.empty()) {
                     roast = msgs[getRandom<size_t>(0, msgs.size() - 1)];
