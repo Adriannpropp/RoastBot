@@ -11,7 +11,7 @@ using namespace geode::prelude;
 template <typename T>
 inline T getRandom(T min, T max) {
     thread_local std::mt19937_64 mt{std::random_device{}()};
-    if constexpr (std::is_integral_v<T>) { // FIXED SYNTAX ERROR C3878 HERE 📉
+    if constexpr (std::is_integral_v<T>) {
         return std::uniform_int_distribution<T>(min, max)(mt);
     } else {
         return std::uniform_real_distribution<T>(min, max)(mt);
@@ -23,10 +23,10 @@ class $modify(RoastBotLayer, PlayLayer) {
         PlayLayer::destroyPlayer(player, object);
         if (!player->m_isDead) return;
 
-        // FIXED SHREDDED PERCENT LOGIC AGAIN 💀
         int percent = this->getCurrentPercentInt(); 
         std::string levelName = this->m_level->m_levelName;
 
+        // 67 fedi idea
         if (percent == 67) {
             auto audioPath = Mod::get()->getResourcesDir() / "67.mp3";
             if (auto fmodEngine = FMODAudioEngine::sharedEngine(); fmodEngine && fmodEngine->m_system) {
@@ -41,7 +41,6 @@ class $modify(RoastBotLayer, PlayLayer) {
         int hardDemons = stats->getStat("14");
         int insaneDemons = stats->getStat("15");
         
-        // FIXED SHREDDED DIFFICULTY LOGIC 💀
         bool isExtreme = (this->m_level->m_stars == 10 && this->m_level->m_demonDifficulty == 6);
 
         std::string roast;
