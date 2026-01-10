@@ -77,6 +77,11 @@ class $modify(RoastBotLayer, PlayLayer) {
                     iconFile = "idfk.png";
                     msgs = {"So close... yet u click like a potato 🙏", "Late-game choke? Quit for the day bro 💀", "holy skill issue"};
                     if (percent == 87) roast = "87 + 87 + 87 + 87, which means u have a skill issue lol 😂";
+                    if (percent == 99) roast = "99%... and you still died?\nBro literally clicked 1% wrong somewhere 🔥😭";
+                    if (percent == 100) {
+                        roast = "You actually did it... good boy";
+                        iconFile = "legendary.png";
+                    }
                 }
 
                 if (roast.empty() && !msgs.empty()) {
